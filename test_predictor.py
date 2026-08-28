@@ -1,22 +1,26 @@
 from src.model.predictor import SentimentPredictor
+import asyncio
 
-def main() -> None:
-    model = SentimentPredictor(model_name= "sentiment-v1", version = "2.0.0")
+async def main() -> None:
+    print("---testing singleton pattern")
+    model1 = SentimentPredictor(model_name= "sentiment-v1", version = "2.0.0")
+    model2 = SentimentPredictor(model_name= "sentiment-v2", version = "3.0.0")
 
-    model.load_model()
+    print(f"are they the same object ? {model1 is model2 }")
+    model1.load_model()
 
     sample_texts: list[str]= [
         "I love this product, it is amazing!",
         "Terrible experience, never again.",
-        "It was okay, nothing special.",
+        
     ]
-    print("\n -- Testing Batch Predict (with Decorator)")
-    predictions = model.predict(texts=sample_texts)
+    print("\n -- Testing Async Batch Predict (with Decorator)")
+    predictions = await model1.predict(texts=sample_texts)
     print(f"Batch results: {predictions}\n")
 
-    print("--Testing stream predict (with generator)")
-    for result in model.stream_predict(texts=sample_texts):
+    print("--Testing async stream predict (with generator)")
+    async for result in model1.stream_predict(texts=sample_texts):
         print(f"Streamed result: {result}")
 
 if __name__== "__main__":
-    main()
+    asyncio.run(main())
