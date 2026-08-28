@@ -10,19 +10,13 @@ def main() -> None:
         "Terrible experience, never again.",
         "It was okay, nothing special.",
     ]
-
+    print("\n -- Testing Batch Predict (with Decorator)")
     predictions = model.predict(texts=sample_texts)
+    print(f"Batch results: {predictions}\n")
 
-    for text, pred in zip(sample_texts, predictions):
-        print(f"Text: '{text}'")
-        print(f"Scores: {pred}")
-        print("--")
-
-    broken_model = SentimentPredictor(model_name="broken")
-    try:
-        broken_model.predict(texts=["test"])
-    except RuntimeError as e:
-        print(f"Caught expected error: {e}")
+    print("--Testing stream predict (with generator)")
+    for result in model.stream_predict(texts=sample_texts):
+        print(f"Streamed result: {result}")
 
 if __name__== "__main__":
     main()

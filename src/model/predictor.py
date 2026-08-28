@@ -36,3 +36,18 @@ class SentimentPredictor:
                     results.append(result)
 
             return results
+
+
+    def stream_predict(self, texts: List[str]):
+            if not self._is_loaded:
+                    raise RuntimeError("Model not Loaded. Call load_model() first.")
+
+            for text in texts:
+                    time.sleep(0.2)
+                    score = len(text)/100.0
+                    yield {
+                            "text": text,
+                            "positive": min(score, 1.0),
+                            "negative": max(1.0 - score, 0.0),
+                            "neutral": 0.1,
+                    }
