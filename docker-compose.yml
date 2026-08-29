@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  # 1. The PostgreSQL Database Service
+  db:
+    image: postgres:15-alpine
+    container_name: sentiment_db
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: secretpassword
+      POSTGRES_DB: sentiment_db
+    ports:
+      - "5432:5432" # Expose to host machine (optional, but good for debugging)
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # Persist data even if container restarts
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d sentiment_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # 2. The FastAPI Application Service
+  api:
+    build: .
+    container_name: sentiment_api
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://admin:secretpassword@db:5432/sentiment_db
+      - MODEL_NAME=sentiment-v1
+      - MODEL_VERSION=2.0.0
+    depends_on:
+      db:
+        condition: service_healthy # Wait for DB to be ready before starting API!
+    volumes:
+      - .:/app # Mount local code for hot-reloading during development
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+volumes:
+  postgres_data:
